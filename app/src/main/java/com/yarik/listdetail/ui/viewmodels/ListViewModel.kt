@@ -6,8 +6,9 @@ import com.yarik.listdetail.data.ItemEntity
 import com.yarik.listdetail.data.Repository
 import com.yarik.listdetail.ui.ListState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -17,9 +18,21 @@ class ListViewModel @Inject constructor(
     val repository: Repository
 ): ViewModel() {
 
-    val itemsState = repository.getAllItems()
-        .map { items -> ListState(items) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ListState())
+    private val backgroundEnabledIds = MutableStateFlow<Set<Long>>(mutableSetOf())
+
+//    val itemsState = repository.getAllItems()
+//        .map { items -> ListState(items) }
+//        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ListState())
+
+    val itemsState = combine(
+        repository.getAllItems(),
+        backgroundEnabledIds
+    ) { items, backgroundEnabledIds ->
+        ListState(
+            items,
+            backgroundEnabledIds
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ListState())
 
     fun addItem(text: String) {
         viewModelScope.launch {
@@ -50,6 +63,14 @@ class ListViewModel @Inject constructor(
     fun onCheckedChanged(isChecked: Boolean, id: Long) {
         viewModelScope.launch {
             repository.onCheckedChanged(isChecked, id)
+        }
+    }
+
+    fun toggleBackground(id: Long) {
+        if (backgroundEnabledIds.value.contains(id)) {
+            backgroundEnabledIds.value -= id
+        } else {
+            backgroundEnabledIds.value += id
         }
     }
 }

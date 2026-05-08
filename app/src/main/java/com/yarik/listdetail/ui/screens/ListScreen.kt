@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
@@ -53,6 +54,7 @@ fun ListScreen(
 ) {
 
     val listState = listViewModel.itemsState.collectAsStateWithLifecycle()
+    val backgroundEnabledIds = listState.value.backgroundEnabledIds
     ItemsList(
         itemsList = listState.value.items,
         onDelete = listViewModel::deleteItem,
@@ -60,7 +62,11 @@ fun ListScreen(
         addNote = listViewModel::addItem,
         onSave = listViewModel::onSaveClicked,
         onSaveDescription = listViewModel::onSaveDescription,
-        onCheckedChange = listViewModel::onCheckedChanged
+        onCheckedChange = listViewModel::onCheckedChanged,
+        isBackgroundEnabled = { id ->
+            backgroundEnabledIds.contains(id)
+        },
+        toggleBackground = listViewModel::toggleBackground
     )
 }
 
@@ -73,7 +79,9 @@ fun ItemsList(
     onSave: (String, Long) -> Unit,
     onSaveDescription: (String, Long) -> Unit,
     onCheckedChange: (Boolean, Long) -> Unit,
-    itemsList: List<ItemEntity>
+    itemsList: List<ItemEntity>,
+    isBackgroundEnabled: (Long) -> Boolean,
+    toggleBackground: (Long) -> Unit,
 ) {
     Scaffold(
         modifier = modifier,
@@ -107,7 +115,9 @@ fun ItemsList(
                             onSave = onSave,
                             onCheckedChange = onCheckedChange,
                             onDelete = onDelete,
-                            navigateToDetails = navigateToDetails
+                            navigateToDetails = navigateToDetails,
+                            isBackgroundEnabled = isBackgroundEnabled,
+                            toggleBackground = toggleBackground
                         )
                         val description = rememberSaveable(item.description) {
                             mutableStateOf(item.description ?: "")
@@ -157,11 +167,18 @@ fun SingleRow(
     onCheckedChange: (Boolean, Long) -> Unit,
     onDelete: (Long) -> Unit,
     navigateToDetails: (Long) -> Unit,
+    isBackgroundEnabled: (Long) -> Boolean,
+    toggleBackground: (Long) -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
     Row(
         modifier = Modifier
-            .padding(16.dp),
+            .padding(16.dp)
+            .background(if (isBackgroundEnabled(item.id)) {
+                Color.Red
+            } else {
+                Color.Unspecified
+            }),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         val text = rememberSaveable(item.text) {
@@ -213,6 +230,11 @@ fun SingleRow(
         }
         IconButton(onClick = { navigateToDetails(item.id) }) {
             Icon(Icons.Default.Info, contentDescription = "Details")
+        }
+        IconButton( onClick = {
+            toggleBackground(item.id)
+        }) {
+            Icon(Icons.Default.Refresh, "background")
         }
     }
 }
