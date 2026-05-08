@@ -1,6 +1,9 @@
 package com.yarik.listdetail.ui.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,13 +21,19 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yarik.listdetail.data.ItemEntity
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
@@ -67,33 +76,36 @@ fun ItemsList(
             modifier = Modifier.padding(paddingValues)
         ) {
             items(items = itemsList, key = { it.id }) { item ->
-                Row(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
                 ) {
-                    val text = rememberSaveable (item.text) { mutableStateOf(item.text ?: "") }
-                    TextField(
-                        modifier = Modifier.weight(1f),
-                        value = text.value,
-                        onValueChange = {
-                            text.value = it
-                        }
-                    )
-                    IconButton(
-                        onClick = { onDelete(item.id) }
+                    Row(
+                        modifier = Modifier
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Icon(Icons.Default.Delete, contentDescription = "Delete note")
-                    }
-                    Button(onClick = {
-                        onSave(text.value, item.id)
-                    }) {
-                        Text("Save")
-                    }
-                    Button(
-                        onClick = {
-                        navigateToDetails(item.id)
-                    }) {
-                        Text("Details")
+                        val text =
+                            rememberSaveable(item.text) { mutableStateOf(item.text ?: "") }
+                        TextField(
+                            modifier = Modifier.weight(1f),
+                            value = text.value,
+                            onValueChange = {
+                                text.value = it
+                            }
+                        )
+                        IconButton(
+                            onClick = { onDelete(item.id) }
+                        ) {
+                            Icon(Icons.Default.Delete, contentDescription = "Delete note")
+                        }
+                        IconButton (onClick = { onSave(text.value, item.id) }) {
+                            Icon(Icons.Default.Check, contentDescription = "Save")
+                        }
+                        IconButton(onClick = { navigateToDetails(item.id) }) {
+                            Icon(Icons.Default.Info, contentDescription = "Details")
+                        }
                     }
                 }
             }
