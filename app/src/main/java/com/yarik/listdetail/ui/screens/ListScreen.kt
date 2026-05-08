@@ -2,6 +2,7 @@ package com.yarik.listdetail.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,11 +25,14 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.TextField
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -36,8 +40,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.Alignment.Companion
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlin.Boolean
 
 @Composable
 fun ListScreen(
@@ -86,48 +92,97 @@ fun ItemsList(
                         .fillMaxWidth()
                         .padding(16.dp)
                 ) {
-                    val focusManager = LocalFocusManager.current
-                    Row(
+                    val isExpanded = rememberSaveable(item.id) { mutableStateOf(false) }
+                    Column(
                         modifier = Modifier
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        val text =
-                            rememberSaveable(item.text) { mutableStateOf(item.text ?: "") }
-                        TextField(
-                            modifier = Modifier
-                                .weight(1f)
-                                .onFocusChanged { focusState ->
-                                    if (!focusState.isFocused) {
-                                        text.value = item.text ?: ""
-                                    }
-                                },
-                            value = text.value,
-                            onValueChange = {
-                                text.value = it
-                            }
+                        SingleRow(
+                            item = item,
+                            isExpanded = isExpanded.value,
+                            onIsExpandedToggled = {
+                                isExpanded.value = !isExpanded.value
+                            },
+                            onSave = onSave,
+                            onCheckedChange = onCheckedChange,
+                            onDelete = onDelete,
+                            navigateToDetails = navigateToDetails
                         )
-                        Checkbox(checked = item.isChecked, onCheckedChange = { isChecked ->
-                            onCheckedChange(isChecked, item.id)
-                        })
-                        IconButton(
-                            onClick = { onDelete(item.id) }
-                        ) {
-                            Icon(Icons.Default.Delete, contentDescription = "Delete note")
-                        }
-                        IconButton (onClick = {
-                            onSave(text.value, item.id)
-                            focusManager.clearFocus()
-                        }
-                        ) {
-                            Icon(Icons.Default.Check, contentDescription = "Save")
-                        }
-                        IconButton(onClick = { navigateToDetails(item.id) }) {
-                            Icon(Icons.Default.Info, contentDescription = "Details")
+                        if (isExpanded.value) {
+                            Text("description ${item.id}")
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun SingleRow(
+    modifier: Modifier = Modifier,
+    item: ItemEntity,
+    isExpanded: Boolean = false,
+    onIsExpandedToggled: () -> Unit,
+    onSave: (String, Long) -> Unit,
+    onCheckedChange: (Boolean, Long) -> Unit,
+    onDelete: (Long) -> Unit,
+    navigateToDetails: (Long) -> Unit,
+) {
+    val focusManager = LocalFocusManager.current
+    Row(
+        modifier = Modifier
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        val text = rememberSaveable(item.text) {
+            mutableStateOf(item.text ?: "")
+        }
+        TextField(
+            modifier = Modifier
+                .weight(1f)
+                .onFocusChanged { focusState ->
+                    if (!focusState.isFocused) {
+                        text.value = item.text ?: ""
+                    }
+                },
+            value = text.value,
+            onValueChange = {
+                text.value = it
+            }
+        )
+        IconButton(onClick = {
+            onIsExpandedToggled()
+        }) {
+            Icon(
+                imageVector = if (isExpanded) {
+                    Icons.Default.KeyboardArrowUp
+                } else {
+                    Icons.Default.KeyboardArrowDown
+                },
+                contentDescription = if (isExpanded) {
+                    "collapse"
+                } else {
+                    "expand"
+                }
+            )
+        }
+        Checkbox(checked = item.isChecked, onCheckedChange = { isChecked ->
+            onCheckedChange(isChecked, item.id)
+        })
+        IconButton(
+            onClick = { onDelete(item.id) }
+        ) {
+            Icon(Icons.Default.Delete, contentDescription = "Delete note")
+        }
+        IconButton(onClick = {
+            onSave(text.value, item.id)
+            focusManager.clearFocus()
+        }
+        ) {
+            Icon(Icons.Default.Check, contentDescription = "Save")
+        }
+        IconButton(onClick = { navigateToDetails(item.id) }) {
+            Icon(Icons.Default.Info, contentDescription = "Details")
         }
     }
 }
