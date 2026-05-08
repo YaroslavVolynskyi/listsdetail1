@@ -15,11 +15,15 @@ class RepositoryImpl @Inject constructor(
         return itemsDao.getById(id)
     }
 
-    override suspend fun addItem(item: ItemEntity): Long {
-        return itemsDao.addItem(item)
+    override suspend fun upsert(item: ItemEntity): Long {
+        return itemsDao.upsert(item)
     }
 
     override suspend fun deleteItem(itemId: Long): Int {
         return itemsDao.deleteItem(itemId)
+    }
+
+    override suspend fun updateText(text: String, id: Long): Int {
+        return itemsDao.updateText(text, id)
     }
 }

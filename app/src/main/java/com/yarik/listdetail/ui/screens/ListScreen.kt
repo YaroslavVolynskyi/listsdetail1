@@ -21,6 +21,10 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
@@ -35,7 +39,8 @@ fun ListScreen(
         itemsList = listState.value.items,
         onDelete = listViewModel::deleteItem,
         navigateToDetails = navigateToDetails,
-        addNote = listViewModel::addItem
+        addNote = listViewModel::addItem,
+        onSave = listViewModel::onSaveClicked
     )
 }
 
@@ -45,6 +50,7 @@ fun ItemsList(
     onDelete: (Long) -> Unit,
     navigateToDetails: (Long) -> Unit,
     addNote: (String) -> Unit,
+    onSave: (String, Long) -> Unit,
     itemsList: List<ItemEntity>
 ) {
     Scaffold(
@@ -65,9 +71,13 @@ fun ItemsList(
                     .fillMaxWidth()
                     .padding(16.dp)
                 ) {
-                    Text(
+                    val text = rememberSaveable (item.text) { mutableStateOf(item.text ?: "") }
+                    TextField(
                         modifier = Modifier.weight(1f),
-                        text = item.text ?: ""
+                        value = text.value,
+                        onValueChange = {
+                            text.value = it
+                        }
                     )
                     IconButton(
                         onClick = { onDelete(item.id) }
@@ -75,6 +85,12 @@ fun ItemsList(
                         Icon(Icons.Default.Delete, contentDescription = "Delete note")
                     }
                     Button(onClick = {
+                        onSave(text.value, item.id)
+                    }) {
+                        Text("Save")
+                    }
+                    Button(
+                        onClick = {
                         navigateToDetails(item.id)
                     }) {
                         Text("Details")

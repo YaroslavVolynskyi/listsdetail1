@@ -15,8 +15,11 @@ interface ItemsDao {
     fun getById(id: Long): Flow<ItemEntity>
 
     @Upsert
-    suspend fun addItem(item: ItemEntity): Long
+    suspend fun upsert(item: ItemEntity): Long
 
     @Query("DELETE FROM items WHERE id = :itemId")
     suspend fun deleteItem(itemId: Long): Int
+
+    @Query("UPDATE items SET text = :text WHERE id = :id")
+    suspend fun updateText(text: String, id: Long): Int
 }
