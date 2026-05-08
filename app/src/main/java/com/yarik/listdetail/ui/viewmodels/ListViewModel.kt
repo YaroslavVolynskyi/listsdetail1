@@ -41,6 +41,12 @@ class ListViewModel @Inject constructor(
         }
     }
 
+    fun onSaveDescription(description: String, id: Long) {
+        viewModelScope.launch {
+            repository.updateDescription(description, id)
+        }
+    }
+
     fun onCheckedChanged(isChecked: Boolean, id: Long) {
         viewModelScope.launch {
             repository.onCheckedChanged(isChecked, id)

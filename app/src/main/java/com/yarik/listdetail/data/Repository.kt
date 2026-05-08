@@ -14,5 +14,7 @@ interface Repository {
 
     suspend fun updateText(text: String, id: Long): Int
 
+    suspend fun updateDescription(description: String, id: Long): Int
+
     suspend fun onCheckedChanged(isChecked: Boolean, id: Long): Int
 }

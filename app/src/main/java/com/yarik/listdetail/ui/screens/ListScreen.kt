@@ -59,6 +59,7 @@ fun ListScreen(
         navigateToDetails = navigateToDetails,
         addNote = listViewModel::addItem,
         onSave = listViewModel::onSaveClicked,
+        onSaveDescription = listViewModel::onSaveDescription,
         onCheckedChange = listViewModel::onCheckedChanged
     )
 }
@@ -70,6 +71,7 @@ fun ItemsList(
     navigateToDetails: (Long) -> Unit,
     addNote: (String) -> Unit,
     onSave: (String, Long) -> Unit,
+    onSaveDescription: (String, Long) -> Unit,
     onCheckedChange: (Boolean, Long) -> Unit,
     itemsList: List<ItemEntity>
 ) {
@@ -107,8 +109,36 @@ fun ItemsList(
                             onDelete = onDelete,
                             navigateToDetails = navigateToDetails
                         )
+                        val description = rememberSaveable(item.description) {
+                            mutableStateOf(item.description ?: "")
+                        }
                         if (isExpanded.value) {
-                            Text("description ${item.id}")
+                            Row(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                            ) {
+                                val focusManager = LocalFocusManager.current
+                                TextField(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .onFocusChanged { focusState ->
+                                            if (!focusState.isFocused) {
+                                                description.value = item.description ?: ""
+                                            }
+                                        },
+                                    value = description.value,
+                                    onValueChange = { newValue ->
+                                        description.value = newValue
+                                    },
+                                )
+                                IconButton(onClick = {
+                                    onSaveDescription(description.value, item.id)
+                                    focusManager.clearFocus()
+                                    isExpanded.value = false
+                                }) {
+                                    Icon(Icons.Default.Check, contentDescription = "save description")
+                                }
+                            }
                         }
                     }
                 }
