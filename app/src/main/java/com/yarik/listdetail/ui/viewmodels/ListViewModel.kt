@@ -18,7 +18,7 @@ class ListViewModel @Inject constructor(
     val repository: Repository
 ): ViewModel() {
 
-    private val backgroundEnabledIds = MutableStateFlow<Set<Long>>(mutableSetOf())
+    private val backgroundEnabledIds = MutableStateFlow<Set<Long>>(emptySet())
 
 //    val itemsState = repository.getAllItems()
 //        .map { items -> ListState(items) }
