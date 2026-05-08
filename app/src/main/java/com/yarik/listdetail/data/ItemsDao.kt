@@ -22,4 +22,7 @@ interface ItemsDao {
 
     @Query("UPDATE items SET text = :text WHERE id = :id")
     suspend fun updateText(text: String, id: Long): Int
+
+    @Query("UPDATE items SET isChecked = :isChecked WHERE id = :id")
+    suspend fun onCheckedChanged(isChecked: Boolean, id: Long): Int
 }

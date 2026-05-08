@@ -26,4 +26,8 @@ class RepositoryImpl @Inject constructor(
     override suspend fun updateText(text: String, id: Long): Int {
         return itemsDao.updateText(text, id)
     }
+
+    override suspend fun onCheckedChanged(isChecked: Boolean, id: Long): Int {
+        return itemsDao.onCheckedChanged(isChecked, id)
+    }
 }

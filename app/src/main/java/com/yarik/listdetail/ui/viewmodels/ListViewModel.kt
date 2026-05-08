@@ -40,4 +40,10 @@ class ListViewModel @Inject constructor(
             repository.updateText(currentText, id)
         }
     }
+
+    fun onCheckedChanged(isChecked: Boolean, id: Long) {
+        viewModelScope.launch {
+            repository.onCheckedChanged(isChecked, id)
+        }
+    }
 }

@@ -26,12 +26,15 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.Alignment.Companion
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -49,7 +52,8 @@ fun ListScreen(
         onDelete = listViewModel::deleteItem,
         navigateToDetails = navigateToDetails,
         addNote = listViewModel::addItem,
-        onSave = listViewModel::onSaveClicked
+        onSave = listViewModel::onSaveClicked,
+        onCheckedChange = listViewModel::onCheckedChanged
     )
 }
 
@@ -60,6 +64,7 @@ fun ItemsList(
     navigateToDetails: (Long) -> Unit,
     addNote: (String) -> Unit,
     onSave: (String, Long) -> Unit,
+    onCheckedChange: (Boolean, Long) -> Unit,
     itemsList: List<ItemEntity>
 ) {
     Scaffold(
@@ -81,6 +86,7 @@ fun ItemsList(
                         .fillMaxWidth()
                         .padding(16.dp)
                 ) {
+                    val focusManager = LocalFocusManager.current
                     Row(
                         modifier = Modifier
                             .padding(16.dp),
@@ -89,18 +95,31 @@ fun ItemsList(
                         val text =
                             rememberSaveable(item.text) { mutableStateOf(item.text ?: "") }
                         TextField(
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier
+                                .weight(1f)
+                                .onFocusChanged { focusState ->
+                                    if (!focusState.isFocused) {
+                                        text.value = item.text ?: ""
+                                    }
+                                },
                             value = text.value,
                             onValueChange = {
                                 text.value = it
                             }
                         )
+                        Checkbox(checked = item.isChecked, onCheckedChange = { isChecked ->
+                            onCheckedChange(isChecked, item.id)
+                        })
                         IconButton(
                             onClick = { onDelete(item.id) }
                         ) {
                             Icon(Icons.Default.Delete, contentDescription = "Delete note")
                         }
-                        IconButton (onClick = { onSave(text.value, item.id) }) {
+                        IconButton (onClick = {
+                            onSave(text.value, item.id)
+                            focusManager.clearFocus()
+                        }
+                        ) {
                             Icon(Icons.Default.Check, contentDescription = "Save")
                         }
                         IconButton(onClick = { navigateToDetails(item.id) }) {
