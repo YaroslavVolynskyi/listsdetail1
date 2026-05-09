@@ -2,6 +2,8 @@ package com.yarik.listdetail.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -46,6 +48,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
@@ -104,21 +107,46 @@ fun ItemsList(
 ) {
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+    val showScrollToTopButton = remember { mutableStateOf(false) }
+
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.firstVisibleItemIndex }
+            .collect { index ->
+                showScrollToTopButton.value = index > 2
+            }
+    }
 
     Scaffold(
         modifier = modifier,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    addNote("item ${itemsList.size + 1}")
-                    coroutineScope.launch {
-                        // items count will increase by 1 after DB emits, scroll to the new last item
-                        listState.animateScrollToItem(itemsList.size)
+            Column {
+                AnimatedVisibility(
+                    visible = showScrollToTopButton.value,
+                    enter = scaleIn(),
+                    exit = scaleOut()
+                ) {
+                    FloatingActionButton(
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        onClick = {
+                            coroutineScope.launch {
+                                listState.animateScrollToItem(0)
+                            }
+                        }
+                    ) {
+                        Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Scroll to top")
                     }
                 }
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Add note")
+                FloatingActionButton(
+                    onClick = {
+                        addNote("item ${itemsList.size + 1}")
+                        coroutineScope.launch {
+                            listState.animateScrollToItem(itemsList.size)
+                        }
+                    }
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Add note")
+                }
             }
         }
     ) { paddingValues ->
