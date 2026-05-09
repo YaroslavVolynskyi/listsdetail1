@@ -6,9 +6,11 @@ import com.yarik.listdetail.data.ItemEntity
 import com.yarik.listdetail.data.Repository
 import com.yarik.listdetail.ui.ListState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -17,6 +19,9 @@ import javax.inject.Inject
 class ListViewModel @Inject constructor(
     val repository: Repository
 ): ViewModel() {
+
+    private val _snackbarEvent = Channel<String>()
+    val snackbarEvent = _snackbarEvent.receiveAsFlow()
 
     private val backgroundEnabledIds = MutableStateFlow<Set<Long>>(emptySet())
 
@@ -51,12 +56,14 @@ class ListViewModel @Inject constructor(
     fun onSaveClicked(currentText: String, id: Long) {
         viewModelScope.launch {
             repository.updateText(currentText, id)
+            _snackbarEvent.send("Saved!")
         }
     }
 
     fun onSaveDescription(description: String, id: Long) {
         viewModelScope.launch {
             repository.updateDescription(description, id)
+            _snackbarEvent.send("Description saved!")
         }
     }
 

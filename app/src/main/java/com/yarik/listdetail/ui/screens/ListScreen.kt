@@ -1,5 +1,8 @@
 package com.yarik.listdetail.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,7 +35,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.TextField
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,7 +61,16 @@ fun ListScreen(
 
     val listState = listViewModel.itemsState.collectAsStateWithLifecycle()
     val backgroundEnabledIds = listState.value.backgroundEnabledIds
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        listViewModel.snackbarEvent.collect { message ->
+            snackbarHostState.showSnackbar(message)
+        }
+    }
+
     ItemsList(
+        snackbarHostState = snackbarHostState,
         itemsList = listState.value.items,
         onDelete = listViewModel::deleteItem,
         navigateToDetails = navigateToDetails,
@@ -73,6 +88,7 @@ fun ListScreen(
 @Composable
 fun ItemsList(
     modifier: Modifier = Modifier,
+    snackbarHostState: SnackbarHostState,
     onDelete: (Long) -> Unit,
     navigateToDetails: (Long) -> Unit,
     addNote: (String) -> Unit,
@@ -85,6 +101,7 @@ fun ItemsList(
 ) {
     Scaffold(
         modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { addNote("item ${itemsList.size + 1}") }
@@ -122,7 +139,11 @@ fun ItemsList(
                         val description = rememberSaveable(item.description) {
                             mutableStateOf(item.description ?: "")
                         }
-                        if (isExpanded.value) {
+                        AnimatedVisibility(
+                            visible = isExpanded.value,
+                            enter = expandVertically(),
+                            exit = shrinkVertically()
+                        ) {
                             Row(
                                 modifier = Modifier
                                     .padding(16.dp)
