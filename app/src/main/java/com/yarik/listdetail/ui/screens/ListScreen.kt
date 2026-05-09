@@ -50,6 +50,7 @@ import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -113,13 +114,16 @@ fun ItemsList(
 ) {
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
-    val showScrollToTopButton = remember { mutableStateOf(false) }
+//    val showScrollToTopButton = remember { mutableStateOf(false) }
+//    LaunchedEffect(listState) {
+//        snapshotFlow { listState.firstVisibleItemIndex }
+//            .collect { index ->
+//                showScrollToTopButton.value = index > 2
+//            }
+//    }
 
-    LaunchedEffect(listState) {
-        snapshotFlow { listState.firstVisibleItemIndex }
-            .collect { index ->
-                showScrollToTopButton.value = index > 2
-            }
+    val showScrollToTopButton = remember {
+        derivedStateOf { listState.firstVisibleItemIndex > 2 }
     }
 
     Scaffold(
