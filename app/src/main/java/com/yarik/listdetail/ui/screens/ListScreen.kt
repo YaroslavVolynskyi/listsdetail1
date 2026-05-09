@@ -1,6 +1,9 @@
 package com.yarik.listdetail.ui.screens
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
@@ -159,6 +162,7 @@ fun ItemsList(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp)
+                        .animateContentSize()
                 ) {
                     val isExpanded = rememberSaveable(item.id) { mutableStateOf(false) }
                     Column(
@@ -262,18 +266,20 @@ fun SingleRow(
         IconButton(onClick = {
             onIsExpandedToggled()
         }) {
-            Icon(
-                imageVector = if (isExpanded) {
-                    Icons.Default.KeyboardArrowUp
-                } else {
-                    Icons.Default.KeyboardArrowDown
-                },
-                contentDescription = if (isExpanded) {
-                    "collapse"
-                } else {
-                    "expand"
-                }
-            )
+            Crossfade(targetState = isExpanded) { expanded ->
+                Icon(
+                    imageVector = if (expanded) {
+                        Icons.Default.KeyboardArrowUp
+                    } else {
+                        Icons.Default.KeyboardArrowDown
+                    },
+                    contentDescription = if (expanded) {
+                        "collapse"
+                    } else {
+                        "expand"
+                    }
+                )
+            }
         }
         Checkbox(checked = item.isChecked, onCheckedChange = { isChecked ->
             onCheckedChange(isChecked, item.id)
