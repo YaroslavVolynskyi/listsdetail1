@@ -7,12 +7,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yarik.listdetail.data.ItemEntity
 import com.yarik.listdetail.data.Repository
-import com.yarik.listdetail.ui.ListState
+import com.yarik.listdetail.ui.ListUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -36,11 +39,13 @@ class ListViewModel @Inject constructor(
         repository.getAllItems(),
         backgroundEnabledIds
     ) { items, backgroundEnabledIds ->
-        ListState(
+        ListUiState.Success(
             items,
             backgroundEnabledIds
-        )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ListState())
+        ) as ListUiState
+    }.onStart { emit(ListUiState.Loading) }
+        .catch { e -> emit(ListUiState.Error(e.message ?: "Unknown error")) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ListUiState.Loading)
 
     fun addItem(text: String) {
         viewModelScope.launch {

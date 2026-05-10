@@ -4,7 +4,11 @@ import androidx.compose.runtime.Immutable
 import com.yarik.listdetail.data.ItemEntity
 
 @Immutable
-data class ListState(
-    val items: List<ItemEntity> = listOf(),
-    val backgroundEnabledIds: Set<Long> = emptySet()
-)
+sealed interface ListUiState {
+    data object Loading : ListUiState
+    data class Error(val message: String) : ListUiState
+    data class Success(
+        val items: List<ItemEntity> = listOf(),
+        val backgroundEnabledIds: Set<Long> = emptySet()
+    ) : ListUiState
+}

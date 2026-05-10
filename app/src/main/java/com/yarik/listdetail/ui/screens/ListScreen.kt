@@ -22,6 +22,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.yarik.listdetail.ui.ListUiState
 import com.yarik.listdetail.ui.viewmodels.ListViewModel
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -51,6 +52,7 @@ import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -90,8 +92,7 @@ fun ListScreen(
         }
     }
 
-    val listState = listViewModel.itemsState.collectAsStateWithLifecycle()
-    val backgroundEnabledIds = listState.value.backgroundEnabledIds
+    val uiState = listViewModel.itemsState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
@@ -100,20 +101,40 @@ fun ListScreen(
         }
     }
 
-    ItemsList(
-        snackbarHostState = snackbarHostState,
-        itemsList = listState.value.items,
-        onDelete = listViewModel::deleteItem,
-        navigateToDetails = navigateToDetails,
-        addNote = listViewModel::addItem,
-        onSave = listViewModel::onSaveClicked,
-        onSaveDescription = listViewModel::onSaveDescription,
-        onCheckedChange = listViewModel::onCheckedChanged,
-        isBackgroundEnabled = { id ->
-            backgroundEnabledIds.contains(id)
-        },
-        toggleBackground = listViewModel::toggleBackground
-    )
+    when (val state = uiState.value) {
+        is ListUiState.Loading -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+        is ListUiState.Error -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Error: ${state.message}")
+            }
+        }
+        is ListUiState.Success -> {
+            ItemsList(
+                snackbarHostState = snackbarHostState,
+                itemsList = state.items,
+                onDelete = listViewModel::deleteItem,
+                navigateToDetails = navigateToDetails,
+                addNote = listViewModel::addItem,
+                onSave = listViewModel::onSaveClicked,
+                onSaveDescription = listViewModel::onSaveDescription,
+                onCheckedChange = listViewModel::onCheckedChanged,
+                isBackgroundEnabled = { id ->
+                    state.backgroundEnabledIds.contains(id)
+                },
+                toggleBackground = listViewModel::toggleBackground
+            )
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -140,13 +161,11 @@ fun ItemsList(
 //                showScrollToTopButton.value = index > 2
 //            }
 //    }
-
     val showScrollToTopButton = remember {
         derivedStateOf { listState.firstVisibleItemIndex > 2 }
     }
 
     Scaffold(
-        modifier = modifier,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
