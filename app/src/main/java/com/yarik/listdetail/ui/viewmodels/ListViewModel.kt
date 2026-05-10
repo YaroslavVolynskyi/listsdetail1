@@ -89,6 +89,12 @@ class ListViewModel @Inject constructor(
         }
     }
 
+    fun deleteAll() {
+        viewModelScope.launch {
+            repository.deleteAll()
+        }
+    }
+
     override fun onPause(owner: LifecycleOwner) {
         super.onPause(owner)
         Log.e("yarik", "onPause from viewModel")

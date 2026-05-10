@@ -131,7 +131,8 @@ fun ListScreen(
                 isBackgroundEnabled = { id ->
                     state.backgroundEnabledIds.contains(id)
                 },
-                toggleBackground = listViewModel::toggleBackground
+                toggleBackground = listViewModel::toggleBackground,
+                deleteAll = listViewModel::deleteAll
             )
         }
     }
@@ -151,12 +152,15 @@ fun ItemsList(
     itemsList: List<ItemEntity>,
     isBackgroundEnabled: (Long) -> Boolean,
     toggleBackground: (Long) -> Unit,
+    deleteAll: () -> Unit
 ) {
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     val shouldScrollToBottom = rememberSaveable { mutableStateOf(false) }
+    val shouldShowRemoveAll = rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(itemsList.size) {
+        shouldShowRemoveAll.value = itemsList.size > 15
         if (shouldScrollToBottom.value) {
             listState.animateScrollToItem(itemsList.size - 1)
             shouldScrollToBottom.value = false
@@ -185,6 +189,18 @@ fun ItemsList(
         },
         floatingActionButton = {
             Column {
+                AnimatedVisibility(
+                    visible = shouldShowRemoveAll.value,
+                    enter = scaleIn(),
+                    exit = scaleOut()
+                ) {
+                    FloatingActionButton(
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        onClick = { deleteAll() }
+                    ) {
+                        Icon(Icons.Default.Delete, contentDescription = "Delete All")
+                    }
+                }
                 AnimatedVisibility(
                     visible = showScrollToTopButton.value,
                     enter = scaleIn(),

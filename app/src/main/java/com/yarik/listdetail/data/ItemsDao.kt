@@ -28,4 +28,7 @@ interface ItemsDao {
 
     @Query("UPDATE items SET isChecked = :isChecked WHERE id = :id")
     suspend fun onCheckedChanged(isChecked: Boolean, id: Long): Int
+
+    @Query("DELETE FROM items")
+    suspend fun deleteAll(): Int
 }

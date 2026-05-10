@@ -34,4 +34,8 @@ class RepositoryImpl @Inject constructor(
     override suspend fun onCheckedChanged(isChecked: Boolean, id: Long): Int {
         return itemsDao.onCheckedChanged(isChecked, id)
     }
+
+    override suspend fun deleteAll(): Int {
+        return itemsDao.deleteAll()
+    }
 }
