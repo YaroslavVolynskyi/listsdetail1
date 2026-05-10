@@ -154,6 +154,14 @@ fun ItemsList(
 ) {
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+    val shouldScrollToBottom = rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(itemsList.size) {
+        if (shouldScrollToBottom.value) {
+            listState.animateScrollToItem(itemsList.size - 1)
+            shouldScrollToBottom.value = false
+        }
+    }
 //    val showScrollToTopButton = remember { mutableStateOf(false) }
 //    LaunchedEffect(listState) {
 //        snapshotFlow { listState.firstVisibleItemIndex }
@@ -196,9 +204,7 @@ fun ItemsList(
                 FloatingActionButton(
                     onClick = {
                         addNote("item ${itemsList.size + 1}")
-                        coroutineScope.launch {
-                            listState.animateScrollToItem(itemsList.size)
-                        }
+                        shouldScrollToBottom.value = true
                     }
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "Add note")
@@ -219,7 +225,7 @@ fun ItemsList(
                 }
                 SwipeToDismissBox(
                     state = dismissState,
-                    modifier = Modifier.animateContentSize(),
+                    modifier = Modifier.animateItem().animateContentSize(),
                     backgroundContent = {
                         Box(
                             modifier = Modifier
