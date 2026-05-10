@@ -50,6 +50,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -356,8 +358,29 @@ fun SingleRow(
         IconButton(onClick = { navigateToDetails(item.id) }) {
             Icon(Icons.Default.Info, contentDescription = "Details")
         }
-        IconButton( onClick = { toggleBackground(item.id) }) {
+        val showDialog = rememberSaveable { mutableStateOf(false) }
+        IconButton( onClick = { showDialog.value = true }) {
             Icon(Icons.Default.Refresh, "background")
+        }
+        if (showDialog.value) {
+            AlertDialog(
+                onDismissRequest = { showDialog.value = false },
+                title = { Text("Toggle background") },
+                text = { Text("Change background for this item?") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showDialog.value = false
+                        toggleBackground(item.id)
+                    }) {
+                        Text("OK")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDialog.value = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
         }
     }
 }
