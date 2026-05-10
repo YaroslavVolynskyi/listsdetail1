@@ -198,6 +198,7 @@ fun ItemsList(
                 }
                 SwipeToDismissBox(
                     state = dismissState,
+                    modifier = Modifier.animateContentSize(),
                     backgroundContent = {
                         Box(
                             modifier = Modifier
@@ -223,7 +224,6 @@ fun ItemsList(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp)
-                            .animateContentSize()
                     ) {
                         val isExpanded = rememberSaveable(item.id) { mutableStateOf(false) }
                         Column(
