@@ -1,8 +1,10 @@
 package com.yarik.listdetail.data
 
+import androidx.compose.runtime.Immutable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+@Immutable
 @Entity(tableName = "items")
 data class ItemEntity(
     @PrimaryKey(autoGenerate = true)
