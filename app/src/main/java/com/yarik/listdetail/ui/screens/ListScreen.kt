@@ -157,10 +157,9 @@ fun ItemsList(
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     val shouldScrollToBottom = rememberSaveable { mutableStateOf(false) }
-    val shouldShowRemoveAll = rememberSaveable { mutableStateOf(false) }
+    val shouldShowRemoveAll = itemsList.size > 15
 
     LaunchedEffect(itemsList.size) {
-        shouldShowRemoveAll.value = itemsList.size > 15
         if (shouldScrollToBottom.value) {
             listState.animateScrollToItem(itemsList.size - 1)
             shouldScrollToBottom.value = false
@@ -190,7 +189,7 @@ fun ItemsList(
         floatingActionButton = {
             Column {
                 AnimatedVisibility(
-                    visible = shouldShowRemoveAll.value,
+                    visible = shouldShowRemoveAll,
                     enter = scaleIn(),
                     exit = scaleOut()
                 ) {
