@@ -78,11 +78,13 @@ fun ListScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { source, event ->
-            Log.e("yarik", "lifecycle event - ${event.name}")
+            Log.e("yarik", "observer from composable. Lifecycle event - ${event.name}")
         }
         lifecycleOwner.lifecycle.addObserver(observer)
+        lifecycleOwner.lifecycle.addObserver(listViewModel)
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
+            lifecycleOwner.lifecycle.removeObserver(listViewModel)
         }
     }
 

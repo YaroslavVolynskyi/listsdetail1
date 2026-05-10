@@ -1,5 +1,8 @@
 package com.yarik.listdetail.ui.viewmodels
 
+import android.util.Log
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yarik.listdetail.data.ItemEntity
@@ -18,7 +21,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ListViewModel @Inject constructor(
     val repository: Repository
-): ViewModel() {
+): ViewModel(), DefaultLifecycleObserver {
 
     private val _snackbarEvent = Channel<String>()
     val snackbarEvent = _snackbarEvent.receiveAsFlow()
@@ -79,5 +82,15 @@ class ListViewModel @Inject constructor(
         } else {
             backgroundEnabledIds.value += id
         }
+    }
+
+    override fun onPause(owner: LifecycleOwner) {
+        super.onPause(owner)
+        Log.e("yarik", "onPause from viewModel")
+    }
+
+    override fun onResume(owner: LifecycleOwner) {
+        super.onResume(owner)
+        Log.e("yarik", "onResume from viewModel")
     }
 }
