@@ -70,7 +70,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.yarik.listdetail.ui.viewmodels.activityViewModel
 import com.yarik.listdetail.ui.theme.Purple80
 import com.yarik.listdetail.ui.viewmodels.SharedViewModel
 import kotlin.Boolean
@@ -80,8 +80,8 @@ fun ListScreen(
     modifier: Modifier = Modifier,
     navigateToDetails: (Long) -> Unit,
     listViewModel: ListViewModel = hiltViewModel(),
-    sharedViewModel: SharedViewModel = viewModel(),
 ) {
+    val sharedViewModel: SharedViewModel = activityViewModel()
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { source, event ->

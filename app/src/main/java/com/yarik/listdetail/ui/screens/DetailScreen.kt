@@ -36,7 +36,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.room.util.TableInfo
 import com.yarik.listdetail.data.ItemEntity
 import com.yarik.listdetail.ui.theme.Purple80
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.yarik.listdetail.ui.viewmodels.activityViewModel
 import com.yarik.listdetail.ui.viewmodels.DetailViewModel
 import com.yarik.listdetail.ui.viewmodels.SharedViewModel
 
@@ -44,8 +44,8 @@ import com.yarik.listdetail.ui.viewmodels.SharedViewModel
 fun DetailScreen(
     modifier: Modifier = Modifier,
     itemId: Long,
-    sharedViewModel: SharedViewModel = viewModel(),
 ) {
+    val sharedViewModel: SharedViewModel = activityViewModel()
     val detailViewModel: DetailViewModel = hiltViewModel<DetailViewModel, DetailViewModel.Factory> (
         creationCallback = {
             factory -> factory.create(entryId = itemId)

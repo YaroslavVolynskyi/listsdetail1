@@ -23,8 +23,6 @@ import androidx.navigation3.ui.NavDisplay
 import com.yarik.listdetail.navigation.DetailsScreenKey
 import com.yarik.listdetail.ui.screens.DetailScreen
 import com.yarik.listdetail.ui.screens.ListScreen
-import com.yarik.listdetail.ui.viewmodels.SharedViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.modules.SerializersModule
@@ -52,8 +50,6 @@ class MainActivity : ComponentActivity() {
                 ListScreenKey
             )
 
-            val sharedViewModel: SharedViewModel = viewModel()
-
             ListDetailTheme {
                 NavDisplay(
                     backStack = backStack,
@@ -65,15 +61,11 @@ class MainActivity : ComponentActivity() {
                     entryProvider = entryProvider {
                         entry<ListScreenKey> {
                             ListScreen(
-                                navigateToDetails = { id -> backStack.add(DetailsScreenKey(id)) },
-                                sharedViewModel = sharedViewModel
+                                navigateToDetails = { id -> backStack.add(DetailsScreenKey(id)) }
                             )
                         }
                         entry<DetailsScreenKey> { key ->
-                            DetailScreen(
-                                itemId = key.noteId,
-                                sharedViewModel = sharedViewModel
-                            )
+                            DetailScreen(itemId = key.noteId)
                         }
                     }
                 )
