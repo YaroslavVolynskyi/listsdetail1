@@ -70,7 +70,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yarik.listdetail.ui.theme.Purple80
+import com.yarik.listdetail.ui.viewmodels.SharedViewModel
 import kotlin.Boolean
 
 @Composable
@@ -78,6 +80,7 @@ fun ListScreen(
     modifier: Modifier = Modifier,
     navigateToDetails: (Long) -> Unit,
     listViewModel: ListViewModel = hiltViewModel(),
+    sharedViewModel: SharedViewModel = viewModel(),
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -99,6 +102,20 @@ fun ListScreen(
         listViewModel.snackbarEvent.collect { message ->
             snackbarHostState.showSnackbar(message)
         }
+    }
+
+    val timeSpent = sharedViewModel.timeSpentOnDetail.collectAsStateWithLifecycle()
+    timeSpent.value?.let { seconds ->
+        AlertDialog(
+            onDismissRequest = { sharedViewModel.clearTimeSpent() },
+            title = { Text("Time on Detail Screen") },
+            text = { Text("You spent $seconds seconds on the detail screen.") },
+            confirmButton = {
+                TextButton(onClick = { sharedViewModel.clearTimeSpent() }) {
+                    Text("OK")
+                }
+            }
+        )
     }
 
     when (val state = uiState.value) {

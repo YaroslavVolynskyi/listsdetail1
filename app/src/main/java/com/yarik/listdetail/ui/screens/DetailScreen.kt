@@ -22,6 +22,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,18 +36,30 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.room.util.TableInfo
 import com.yarik.listdetail.data.ItemEntity
 import com.yarik.listdetail.ui.theme.Purple80
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yarik.listdetail.ui.viewmodels.DetailViewModel
+import com.yarik.listdetail.ui.viewmodels.SharedViewModel
 
 @Composable
 fun DetailScreen(
     modifier: Modifier = Modifier,
     itemId: Long,
+    sharedViewModel: SharedViewModel = viewModel(),
 ) {
     val detailViewModel: DetailViewModel = hiltViewModel<DetailViewModel, DetailViewModel.Factory> (
         creationCallback = {
             factory -> factory.create(entryId = itemId)
         }
     )
+
+    val entryTime = remember { System.currentTimeMillis() }
+    DisposableEffect(Unit) {
+        onDispose {
+            val secondsSpent = (System.currentTimeMillis() - entryTime) / 1000
+            sharedViewModel.setTimeSpent(secondsSpent)
+        }
+    }
+
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(Unit) {
         detailViewModel.snackbarEvent.collect { message ->
