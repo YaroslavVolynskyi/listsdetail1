@@ -176,6 +176,28 @@ fun ItemsList(
         derivedStateOf { listState.firstVisibleItemIndex > 2 }
     }
 
+    val showDeleteAllDialog = rememberSaveable { mutableStateOf(false) }
+    if (showDeleteAllDialog.value) {
+        AlertDialog(
+            onDismissRequest = { showDeleteAllDialog.value = false },
+            title = { Text("Delete All") },
+            text = { Text("Are you sure you want to delete all?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteAllDialog.value = false
+                    deleteAll()
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteAllDialog.value = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
@@ -195,7 +217,9 @@ fun ItemsList(
                 ) {
                     FloatingActionButton(
                         modifier = Modifier.padding(bottom = 8.dp),
-                        onClick = { deleteAll() }
+                        onClick = {
+                            showDeleteAllDialog.value = true
+                        }
                     ) {
                         Icon(Icons.Default.Delete, contentDescription = "Delete All")
                     }
