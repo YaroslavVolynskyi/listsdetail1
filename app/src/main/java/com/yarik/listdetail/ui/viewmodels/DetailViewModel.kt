@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel(assistedFactory = DetailViewModel.Factory::class)
@@ -20,10 +21,15 @@ class DetailViewModel @AssistedInject constructor(
     @Assisted val entryId: Long,
 ): ViewModel() {
 
-
     val item: StateFlow<ItemEntity?> = repository
         .getById(entryId)
         .stateIn(viewModelScope,  SharingStarted.WhileSubscribed(5000) ,null)
+
+    fun saveEditedItem(editedItem: ItemEntity) {
+        viewModelScope.launch {
+            repository.upsert(editedItem)
+        }
+    }
 
     @AssistedFactory
     interface Factory {
