@@ -13,6 +13,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.ui.Alignment
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -20,7 +22,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -43,10 +47,17 @@ fun DetailScreen(
             factory -> factory.create(entryId = itemId)
         }
     )
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(Unit) {
+        detailViewModel.snackbarEvent.collect { message ->
+            snackbarHostState.showSnackbar(message)
+        }
+    }
     val item = detailViewModel.item.collectAsStateWithLifecycle()
     item.value?.let {
         Detail(
             item = it,
+            snackbarHostState = snackbarHostState,
             onSaveItem = detailViewModel::saveEditedItem
         )
     }
@@ -57,10 +68,12 @@ fun DetailScreen(
 fun Detail(
     modifier: Modifier = Modifier,
     item: ItemEntity,
+    snackbarHostState: SnackbarHostState,
     onSaveItem: (ItemEntity) -> Unit
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Details screen of item = ${item.text}") },

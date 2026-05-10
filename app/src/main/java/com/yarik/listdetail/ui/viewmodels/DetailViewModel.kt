@@ -19,7 +19,7 @@ import javax.inject.Inject
 class DetailViewModel @AssistedInject constructor(
     val repository: Repository,
     @Assisted val entryId: Long,
-): ViewModel() {
+): BaseViewModel() {
 
     val item: StateFlow<ItemEntity?> = repository
         .getById(entryId)
@@ -28,6 +28,7 @@ class DetailViewModel @AssistedInject constructor(
     fun saveEditedItem(editedItem: ItemEntity) {
         viewModelScope.launch {
             repository.upsert(editedItem)
+            showSnackbar("Item saved!")
         }
     }
 
