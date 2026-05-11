@@ -23,6 +23,8 @@ import androidx.navigation3.ui.NavDisplay
 import com.yarik.listdetail.navigation.DetailsScreenKey
 import com.yarik.listdetail.ui.screens.DetailScreen
 import com.yarik.listdetail.ui.screens.ListScreen
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.modules.SerializersModule
@@ -50,6 +52,8 @@ class MainActivity : ComponentActivity() {
                 ListScreenKey
             )
 
+            val timeFromDetail = remember { mutableStateOf<Long?>(null) }
+
             ListDetailTheme {
                 NavDisplay(
                     backStack = backStack,
@@ -61,11 +65,18 @@ class MainActivity : ComponentActivity() {
                     entryProvider = entryProvider {
                         entry<ListScreenKey> {
                             ListScreen(
-                                navigateToDetails = { id -> backStack.add(DetailsScreenKey(id)) }
+                                navigateToDetails = { id -> backStack.add(DetailsScreenKey(id)) },
+                                timeFromCallback = timeFromDetail.value,
+                                onClearTimeFromCallback = { timeFromDetail.value = null }
                             )
                         }
                         entry<DetailsScreenKey> { key ->
-                            DetailScreen(itemId = key.noteId)
+                            DetailScreen(
+                                itemId = key.noteId,
+                                onNavigateBackWithTime = { seconds ->
+                                    timeFromDetail.value = seconds
+                                }
+                            )
                         }
                     }
                 )

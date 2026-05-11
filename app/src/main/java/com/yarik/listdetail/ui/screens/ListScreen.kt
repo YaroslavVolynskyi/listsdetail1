@@ -79,6 +79,8 @@ import kotlin.Boolean
 fun ListScreen(
     modifier: Modifier = Modifier,
     navigateToDetails: (Long) -> Unit,
+    timeFromCallback: Long? = null,
+    onClearTimeFromCallback: () -> Unit = {},
     listViewModel: ListViewModel = hiltViewModel(),
 ) {
     val sharedViewModel: SharedViewModel = activityViewModel()
@@ -108,10 +110,23 @@ fun ListScreen(
     timeSpent.value?.let { seconds ->
         AlertDialog(
             onDismissRequest = { sharedViewModel.clearTimeSpent() },
-            title = { Text("Time on Detail Screen") },
+            title = { Text("Via SharedViewModel") },
             text = { Text("You spent $seconds seconds on the detail screen.") },
             confirmButton = {
                 TextButton(onClick = { sharedViewModel.clearTimeSpent() }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
+    timeFromCallback?.let { seconds ->
+        AlertDialog(
+            onDismissRequest = { onClearTimeFromCallback() },
+            title = { Text("Via Callback") },
+            text = { Text("You spent $seconds seconds (from callback).") },
+            confirmButton = {
+                TextButton(onClick = { onClearTimeFromCallback() }) {
                     Text("OK")
                 }
             }

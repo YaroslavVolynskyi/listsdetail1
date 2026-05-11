@@ -44,6 +44,7 @@ import com.yarik.listdetail.ui.viewmodels.SharedViewModel
 fun DetailScreen(
     modifier: Modifier = Modifier,
     itemId: Long,
+    onNavigateBackWithTime: (Long) -> Unit = {},
 ) {
     val sharedViewModel: SharedViewModel = activityViewModel()
     val detailViewModel: DetailViewModel = hiltViewModel<DetailViewModel, DetailViewModel.Factory> (
@@ -56,7 +57,8 @@ fun DetailScreen(
     DisposableEffect(Unit) {
         onDispose {
             val secondsSpent = (System.currentTimeMillis() - entryTime) / 1000
-            sharedViewModel.setTimeSpent(secondsSpent)
+            sharedViewModel.setTimeSpent(secondsSpent)      // approach 1: shared ViewModel
+            onNavigateBackWithTime(secondsSpent)             // approach 2: callback via navigation
         }
     }
 
