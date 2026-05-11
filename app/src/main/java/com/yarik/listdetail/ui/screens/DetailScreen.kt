@@ -1,6 +1,7 @@
 package com.yarik.listdetail.ui.screens
 
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -44,8 +45,14 @@ import com.yarik.listdetail.ui.viewmodels.SharedViewModel
 fun DetailScreen(
     modifier: Modifier = Modifier,
     itemId: Long,
+    onNavigateBack: () -> Unit = {},
     onNavigateBackWithTime: (Long) -> Unit = {},
 ) {
+    BackHandler {
+        onNavigateBack()
+        Log.e("yarik", "yarik back pressed back handler")
+    }
+
     val sharedViewModel: SharedViewModel = activityViewModel()
     val detailViewModel: DetailViewModel = hiltViewModel<DetailViewModel, DetailViewModel.Factory> (
         creationCallback = {
@@ -56,6 +63,7 @@ fun DetailScreen(
     val entryTime = remember { System.currentTimeMillis() }
     DisposableEffect(Unit) {
         onDispose {
+            Log.e("yarik", "yarik onDispose")
             val secondsSpent = (System.currentTimeMillis() - entryTime) / 1000
             sharedViewModel.setTimeSpent(secondsSpent)      // approach 1: shared ViewModel
             onNavigateBackWithTime(secondsSpent)             // approach 2: callback via navigation

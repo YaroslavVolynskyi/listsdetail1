@@ -73,6 +73,7 @@ class MainActivity : ComponentActivity() {
                         entry<DetailsScreenKey> { key ->
                             DetailScreen(
                                 itemId = key.noteId,
+                                onNavigateBack = { backStack.removeLastOrNull() },
                                 onNavigateBackWithTime = { seconds ->
                                     timeFromDetail.value = seconds
                                 }
