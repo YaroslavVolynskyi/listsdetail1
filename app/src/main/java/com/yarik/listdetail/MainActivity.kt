@@ -4,80 +4,69 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.layout.AnimatedPane
+import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
+import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
+import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
-import androidx.navigation3.runtime.NavKey
-import androidx.navigation3.runtime.entryProvider
-import androidx.navigation3.runtime.rememberNavBackStack
-import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
-import androidx.savedstate.serialization.SavedStateConfiguration
-import com.yarik.listdetail.navigation.ListScreenKey
-import com.yarik.listdetail.ui.theme.ListDetailTheme
-import androidx.navigation3.ui.NavDisplay
-import com.yarik.listdetail.navigation.DetailsScreenKey
-import com.yarik.listdetail.ui.screens.DetailScreen
-import com.yarik.listdetail.ui.screens.ListScreen
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import com.yarik.listdetail.ui.screens.DetailScreen
+import com.yarik.listdetail.ui.screens.ListScreen
+import com.yarik.listdetail.ui.theme.ListDetailTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalMaterial3AdaptiveApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
         setContent {
-            val backStack = rememberNavBackStack(
-                configuration = SavedStateConfiguration {
-                    serializersModule = SerializersModule {
-                        polymorphic(NavKey::class) {
-                            subclass(ListScreenKey::class, ListScreenKey.serializer())
-                        }
-                        polymorphic(NavKey::class) {
-                            subclass(DetailsScreenKey::class, DetailsScreenKey.serializer())
-                        }
-                    }
-                },
-                ListScreenKey
-            )
-
+            val navigator = rememberListDetailPaneScaffoldNavigator<Long>()
+            val coroutineScope = rememberCoroutineScope()
             val timeFromDetail = remember { mutableStateOf<Long?>(null) }
 
             ListDetailTheme {
-                NavDisplay(
-                    backStack = backStack,
-                    onBack = { backStack.removeLastOrNull() },
-                    entryDecorators = listOf(
-                        rememberSaveableStateHolderNavEntryDecorator(),
-                        rememberViewModelStoreNavEntryDecorator()
-                    ),
-                    entryProvider = entryProvider {
-                        entry<ListScreenKey> {
+                ListDetailPaneScaffold(
+                    directive = navigator.scaffoldDirective,
+                    value = navigator.scaffoldValue,
+                    listPane = {
+                        AnimatedPane {
                             ListScreen(
-                                navigateToDetails = { id -> backStack.add(DetailsScreenKey(id)) },
+                                navigateToDetails = { id ->
+                                    coroutineScope.launch {
+                                        navigator.navigateTo(
+                                            ListDetailPaneScaffoldRole.Detail,
+                                            id
+                                        )
+                                    }
+                                },
                                 timeFromCallback = timeFromDetail.value,
                                 onClearTimeFromCallback = { timeFromDetail.value = null }
                             )
                         }
-                        entry<DetailsScreenKey> { key ->
-                            DetailScreen(
-                                itemId = key.noteId,
-                                onNavigateBack = { backStack.removeLastOrNull() },
-                                onNavigateBackWithTime = { seconds ->
-                                    timeFromDetail.value = seconds
-                                }
-                            )
+                    },
+                    detailPane = {
+                        AnimatedPane {
+                            navigator.currentDestination?.contentKey?.let { itemId ->
+                                DetailScreen(
+                                    itemId = itemId,
+                                    onNavigateBack = {
+                                        coroutineScope.launch { navigator.navigateBack() }
+                                    },
+                                    onNavigateBackWithTime = { seconds ->
+                                        timeFromDetail.value = seconds
+                                    }
+                                )
+                            }
                         }
                     }
                 )

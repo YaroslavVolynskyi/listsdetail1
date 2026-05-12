@@ -55,6 +55,7 @@ fun DetailScreen(
 
     val sharedViewModel: SharedViewModel = activityViewModel()
     val detailViewModel: DetailViewModel = hiltViewModel<DetailViewModel, DetailViewModel.Factory> (
+        key = "detail_$itemId",
         creationCallback = {
             factory -> factory.create(entryId = itemId)
         }
@@ -106,8 +107,8 @@ fun Detail(
             )
         }
     ) { paddingValues ->
-        val description = rememberSaveable { mutableStateOf(item.description) }
-        val name = rememberSaveable { mutableStateOf(item.text) }
+        val description = rememberSaveable(item.id) { mutableStateOf(item.description) }
+        val name = rememberSaveable(item.id) { mutableStateOf(item.text) }
         val focusManager = LocalFocusManager.current
         Card(
             modifier = Modifier.fillMaxWidth()
